@@ -1,0 +1,12 @@
+# Master Ignore List
+node_modules/
+**/node_modules/
+
+# Secrets (API Keys)
+.env
+**/.env
+
+# Build files
+dist/
+build/
+.DS_Store
