@@ -1,0 +1,34 @@
+{
+  "name": "ai-cold-mail-generator-project",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/khushi-krishna/ai-cold-mail-generator#readme",
+  "bugs": {
+    "url": "https://github.com/khushi-krishna/ai-cold-mail-generator/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khushi-krishna/ai-cold-mail-generator.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "npm start --prefix server",
+    "client": "npm run dev --prefix client/ai-cold-mail-generator",
+    "install-server": "npm install --prefix server",
+    "install-client": "npm install --prefix client/ai-cold-mail-generator",
+    "install-all": "npm install && npm run install-server && npm run install-client"
+  },
+  "dependencies": {
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.6"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.2"
+  }
+}
