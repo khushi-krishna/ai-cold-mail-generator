@@ -1,4 +1,4 @@
-const User = require("../models/user");
+const User = require("../models/User");
 const sendEmail = require("../utils/sendEmail");
 const jwt = require("jsonwebtoken");
 
@@ -30,8 +30,8 @@ exports.registerUser = async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // OTP expires after 24hour
-    const otpExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    // OTP expires after 1 hour
+    const otpExpiry = new Date(Date.now() + 60 * 60 * 1000);
 
     const user = await User.create({
       username,
@@ -106,11 +106,51 @@ exports.verifyOTP = async (req, res) => {
 
     return res.status(200).json({
       message: "OTP verified successfully",
+      username: user.username,
+      email: user.email,
       token,
     });
   } catch (error) {
     return res.status(500).json({
       message: "Error verifying OTP",
+      error: error.message,
+    });
+  }
+};
+
+// ================= RESEND OTP =================
+exports.resendOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+    const user = await User.findOne({ email }).select("+otp +otpExpiry");
+
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    if (user.isVerified) {
+      return res.status(400).json({ message: "User already verified" });
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    user.otp = otp;
+    user.otpExpiry = otpExpiry;
+
+    await user.save();
+
+    // Send OTP email in background
+    sendEmail({
+      to: email,
+      subject: "Your OTP for AI COLD MAIL GENERATOR",
+      text: `Your OTP is ${otp}. Valid for 1 hour only.`,
+    }).catch((err) => console.log("Email error:", err.message));
+
+    return res.status(200).json({ message: "OTP resent successfully" });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error resending OTP",
       error: error.message,
     });
   }
@@ -153,6 +193,8 @@ exports.loginUser = async (req, res) => {
 
     res.status(200).json({
       message: "Login successful",
+      username: user.username,
+      email: user.email,
       token,
     });
   } catch (error) {

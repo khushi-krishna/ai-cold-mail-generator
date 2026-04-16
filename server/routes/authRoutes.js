@@ -11,7 +11,8 @@ router.post("/login", authController.loginUser);
 // Verify OTP
 router.post("/verify-otp", authController.verifyOTP);
 
-// // Resend OTP
-// router.post("/resend-otp", authController.resendOTP);
+// Resend OTP
+router.post("/resend-otp", authController.resendOTP);
+
 
 module.exports = router;

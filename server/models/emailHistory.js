@@ -17,15 +17,19 @@ const EmailHistorySchema = new mongoose.Schema(
     },
     emailBody: {
       type: String,
-      required: true,
+      default: "", // ✅
     },
     linkedInDM: {
       type: String,
-      required: true,
+      default: "", // ✅
     },
     followUpEmail: {
       type: String,
-      required: true,
+      default: "", // ✅
+    },
+    resumeTips: {
+      type: String,
+      default: "",
     },
   },
   {

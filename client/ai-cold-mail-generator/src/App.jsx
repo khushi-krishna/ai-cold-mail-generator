@@ -1,12 +1,15 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
+import History from './pages/History';
 import Login from './pages/Login';
-import Signup from './pages/signUp';
+import Signup from './pages/Signup';
 import VerifyOtp from './pages/VerifyOtp';
 import Dashboard from './pages/Dashboard';
 import LandingPage from './pages/LandingPage';
 import { useAuth } from './context/authContext';
+// import ResumeGenerator from './components/ResumeGenerator';
+
 
 function App() {
     const { user, loading } = useAuth();
@@ -23,9 +26,10 @@ function App() {
                 <Route path="/verify-otp" element={<VerifyOtp />} />
 
                 {/* Protected Routes */}
-                <Route path="/dashboard" element={user ? <Layout /> : <Navigate to="/login" />}>
-                    <Route index element={<Dashboard />} />
-                </Route>
+               <Route path="/dashboard" element={user ? <Layout /> : <Navigate to="/login" />}>
+             <Route index element={<Dashboard />} />
+             <Route path="history" element={<History />} />
+            </Route>
             </Routes>
         </Router>
     );

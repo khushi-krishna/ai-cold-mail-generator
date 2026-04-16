@@ -86,7 +86,7 @@
     flex-direction: column;
     gap: 1.5rem;
     position: relative;
-    overflow: hidden;
+        overflow-y: auto; 
 }
 
 .panel-left::before {
@@ -406,7 +406,99 @@
     letter-spacing: 0.08em;
     color: #333;
 }
+/* ── Mode switcher ── */
+.dash-mode-switch {
+    display: flex;
+    gap: 0.25rem;
+    background: #111116;
+    border: 1px solid #1e1e26;
+    border-radius: 10px;
+    padding: 3px;
+    margin-left: auto;
+}
 
+.dash-mode-btn {
+    padding: 0.4rem 1rem;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.dash-mode-btn.active {
+    background: #ff5a28;
+    color: #fff;
+}
+
+/* ── Output type buttons ── */
+.dash-type-grid {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.dash-type-btn {
+    padding: 0.35rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid #1e1e26;
+    background: #0d0d12;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.dash-type-btn.active {
+    border-color: rgba(255, 90, 40, 0.4);
+    color: #ff5a28;
+    background: rgba(255, 90, 40, 0.05);
+}
+
+/* ── Dropzone ── */
+.dash-dropzone {
+    border: 1px dashed #2a2a35;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    background: #0d0d12;
+    transition: all 0.15s;
+    margin-top: 0.4rem;
+}
+
+.dash-dropzone:hover, .dash-dropzone.dragging {
+    border-color: rgba(255, 90, 40, 0.4);
+}
+
+.dash-dropzone.has-file { border-style: solid; border-color: rgba(255, 90, 40, 0.3); }
+
+.dash-drop-icon {
+    width: 20px;
+    height: 20px;
+    color: #333;
+    flex-shrink: 0;
+}
+
+.dash-drop-icon.active { color: #ff5a28; }
+
+.dash-drop-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: #555;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dash-dropzone.has-file .dash-drop-text { color: #e8e4dc; }
 /* ── Responsive ── */
 @media (max-width: 900px) {
     .dash-grid {

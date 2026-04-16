@@ -4,7 +4,8 @@ const app = express();
 const connectDb = require("./config/db");
 const aiRoutes = require("./routes/aiRoutes");
 const authRoutes = require("./routes/authRoutes");
-
+console.log("authRoutes type:", typeof authRoutes);
+console.log("aiRoutes type:", typeof aiRoutes);
 const PORT = 3000;
 
 //CORS configuration
@@ -27,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/ai", aiRoutes); // ✅ FIXED
+app.use("/api/ai", aiRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
