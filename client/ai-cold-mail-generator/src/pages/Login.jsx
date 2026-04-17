@@ -16,7 +16,7 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const { data } = await api.post('/auth/login', { email, password });
+            const { data } = await api.post('/api/auth/login', { email, password });
             login(data);
             toast.success('Logged in successfully!');
             navigate('/dashboard');

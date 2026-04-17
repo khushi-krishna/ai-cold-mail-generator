@@ -116,7 +116,7 @@ const History = () => {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const { data } = await api.get('/ai/history');
+                const { data } = await api.get('/api/ai/history');
                 setHistory(Array.isArray(data) ? data : data.history || []);
             } catch {
                 toast.error('Failed to load history.');
@@ -131,7 +131,7 @@ const History = () => {
     const handleClearHistory = async () => {
         setClearing(true);
         try {
-            await api.delete('/ai/history');
+            await api.delete('/api/ai/history');
             setHistory([]);
             toast.success('History cleared.');
         } catch {

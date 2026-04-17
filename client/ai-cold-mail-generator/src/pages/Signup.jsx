@@ -15,7 +15,7 @@ const Signup = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const { data } = await api.post('/auth/register', { username, email, password });
+            const { data } = await api.post('/api/auth/register', { username, email, password });
             toast.success(data.message);
             navigate('/verify-otp', { state: { userId: data.userId, email } });
         } catch (error) {

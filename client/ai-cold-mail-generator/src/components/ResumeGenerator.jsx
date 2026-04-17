@@ -48,7 +48,7 @@ const ResumeGenerator = () => {
       formData.append('jobDescription', jobDesc);
       formData.append('outputType', outputType);
 
-      const { data } = await api.post('/ai/generate-resume', formData, {
+      const { data } = await api.post('/api/ai/generate-resume', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 

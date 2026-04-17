@@ -9,13 +9,15 @@ console.log("aiRoutes type:", typeof aiRoutes);
 const PORT = 3000;
 
 //CORS configuration
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  }),
-);
+const cors = require("cors");
 
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://ai-cold-mail-generator-alpha.vercel.app"
+  ],
+  credentials: true
+}));
 // env
 require("dotenv").config();
 

@@ -36,7 +36,7 @@ const Dashboard = () => {
         setLoading(true);
         setResult(null);
         try {
-            const { data } = await api.post('/ai/generate-email', { prompt });
+            const { data } = await api.post('api/ai/generate-email', { prompt });
             if (data?.data) {
                 setResult({ type: 'prompt', ...data.data });
                 setActiveTab('subject');
@@ -60,7 +60,7 @@ const Dashboard = () => {
             formData.append('resume', resume);
             formData.append('jobDescription', jobDesc);
             formData.append('outputType', outputType);
-            const { data } = await api.post('/ai/generate-resume', formData, {
+            const { data } = await api.post('api/ai/generate-resume', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             setResult({ type: 'resume', outputType: data.outputType, subject: data.subject, output: data.output });

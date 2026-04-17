@@ -72,7 +72,7 @@ const VerifyOtp = () => {
 const handleResend = async () => {
     try {
         // Double check that 'email' has a value here!
-         const { data } = await api.post('/auth/resend-otp', { email, otp });
+         const { data } = await api.post('/api/auth/resend-otp', { email, otp });
         toast.success('New OTP sent!');
     } catch (error) {
         toast.error(error.response?.data?.message || 'Failed to resend');
