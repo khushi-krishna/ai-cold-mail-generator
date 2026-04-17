@@ -108,7 +108,10 @@ const Dashboard = () => {
             <div className="dash-grid">
                 {/* Header */}
                 <div className="dash-header">
-                    <span className="dash-logo">Outreach.ai</span>
+                    
+    <span className="dash-logo">Outreach.ai</span>
+    <a href="/" className="dash-back-btn">← Home</a>  {/* ✅ */}
+
                     {/* Mode switcher */}
                     <div className="dash-mode-switch">
                          <button
@@ -166,22 +169,36 @@ const Dashboard = () => {
                             </div>
 
                             {/* Resume upload */}
-                            <div>
-                                <span className="prompt-label">Resume (PDF / DOCX)</span>
-                                <div
-                                    className={`dash-dropzone ${dragging ? 'dragging' : ''} ${resume ? 'has-file' : ''}`}
-                                    onDragOver={e => { e.preventDefault(); setDragging(true); }}
-                                    onDragLeave={() => setDragging(false)}
-                                    onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
-                                    onClick={() => document.getElementById('dash-file').click()}>
-                                    <input id="dash-file" type="file" accept=".pdf,.docx"
-                                        style={{ display: 'none' }}
-                                        onChange={e => handleFile(e.target.files[0])} />
-                                    {resume
-                                        ? <><DocumentTextIcon className="dash-drop-icon active" /><span className="dash-drop-text">{resume.name}</span></>
-                                        : <><CloudArrowUpIcon className="dash-drop-icon" /><span className="dash-drop-text">Drop or click to upload</span></>}
-                                </div>
-                            </div>
+                           {/* Resume upload */}
+<div>
+    <span className="prompt-label">Resume (PDF / DOCX)</span>
+    <div
+        className={`dash-dropzone ${dragging ? 'dragging' : ''} ${resume ? 'has-file' : ''}`}
+        onDragOver={e => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
+        onClick={() => !resume && document.getElementById('dash-file').click()}>  {/* ✅ only open picker if no file */}
+        <input id="dash-file" type="file" accept=".pdf,.docx"
+            style={{ display: 'none' }}
+            onChange={e => handleFile(e.target.files[0])} />
+        {resume ? (
+            <>
+                <DocumentTextIcon className="dash-drop-icon active" />
+                <span className="dash-drop-text">{resume.name}</span>
+                <button
+                    className="dash-remove-file"
+                    onClick={e => { e.stopPropagation(); setResume(null); setResult(null); }}>
+                    ✕
+                </button>
+            </>
+        ) : (
+            <>
+                <CloudArrowUpIcon className="dash-drop-icon" />
+                <span className="dash-drop-text">Drop or click to upload</span>
+            </>
+        )}
+    </div>
+</div>
 
                             {/* Job description */}
                             <div className="flex-1 flex flex-col">

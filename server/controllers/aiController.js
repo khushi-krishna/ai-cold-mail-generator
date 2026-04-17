@@ -2,7 +2,31 @@ const axios = require("axios");
 const EmailHistory = require("../models/emailHistory");
 const mammoth = require("mammoth");
 const pdf = require("pdf-parse");
-const pdfParse = typeof pdf === "function" ? pdf : pdf.default;
+
+// handle both CommonJS & ES module cases
+const pdfParse = pdf.default || pdf;
+
+function extractJSON(text) {
+  try {
+    // Remove markdown (```json or ```)
+    text = text.replace(/```json|```/g, "").trim();
+
+    // Extract JSON part
+    const start = text.indexOf("{");
+    const end = text.lastIndexOf("}");
+
+    if (start === -1 || end === -1) {
+      throw new Error("No JSON found in AI response");
+    }
+
+    const jsonString = text.substring(start, end + 1);
+
+    return JSON.parse(jsonString);
+  } catch (err) {
+    console.error("❌ JSON PARSE FAILED:", text);
+    throw new Error("Invalid JSON from AI");
+  }
+}
 // ─── GENERATE EMAIL (original) ────────────────────────────────
 exports.generateEmail = async (req, res) => {
   const { prompt } = req.body;
@@ -213,13 +237,14 @@ RESUME:\n${resumeText.slice(0, 3000)}\nJOB DESCRIPTION:\n${jobDescription.slice(
       output: parsed.output,
     });
   } catch (error) {
-    console.error(
-      "❌ RESUME GENERATE ERROR:",
-      error.response?.data || error.message,
-    );
+    console.error("❌ FULL ERROR:", error);
+    console.error("❌ MESSAGE:", error.message);
+    console.error("❌ RESPONSE:", error.response?.data);
+
     return res.status(500).json({
       message: "Failed to generate output",
-      error: error.response?.data?.error?.message || error.message,
+      error: error.message,
+      raw: error.response?.data,
     });
   }
 };

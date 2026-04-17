@@ -433,7 +433,41 @@
     background: #ff5a28;
     color: #fff;
 }
+/* ── Remove file button ── */
+.dash-remove-file {
+    margin-left: auto;
+    background: rgba(255, 90, 40, 0.08);
+    border: 1px solid rgba(255, 90, 40, 0.2);
+    border-radius: 6px;
+    color: #ff5a28;
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
 
+.dash-remove-file:hover {
+    background: rgba(255, 90, 40, 0.15);
+}
+
+/* ── Back to home ── */
+.dash-back-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    color: #444;
+    text-decoration: none;
+    border: 1px solid #1e1e26;
+    padding: 0.35rem 0.8rem;
+    border-radius: 8px;
+    transition: all 0.15s;
+}
+
+.dash-back-btn:hover {
+    color: #888;
+    border-color: #2a2a35;
+}
 /* ── Output type buttons ── */
 .dash-type-grid {
     display: flex;
