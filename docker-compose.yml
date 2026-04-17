@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+
+  # 🔹 Backend Service
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: ai-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./server/.env
+    restart: always
+    networks:
+      - app-network
+
+  # 🔹 Frontend Service
+  frontend:
+    build:
+      context: ./client/ai-cold-mail-generator
+      dockerfile: Dockerfile
+    container_name: ai-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - app-network
+
+# 🔹 Network for services
+networks:
+  app-network:
+    driver: bridge
+
+# 🔹 NOTE:
+# MongoDB is NOT defined here because we are using MongoDB Atlas (cloud DB)
+# Backend connects to Atlas via MONGO_URI from .env
