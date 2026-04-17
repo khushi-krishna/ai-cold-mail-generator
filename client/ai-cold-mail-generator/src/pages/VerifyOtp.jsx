@@ -87,7 +87,7 @@ const handleResend = async () => {
         if (!isComplete) return;
         setLoading(true);
         try {
-            const { data } = await api.post('/auth/verify-otp', { email, otp });
+            const { data } = await api.post('/api/auth/verify-otp', { email, otp });
             login(data);
             toast.success('Email verified successfully!');
             navigate('/dashboard');
