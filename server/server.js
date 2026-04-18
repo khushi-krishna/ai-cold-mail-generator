@@ -19,7 +19,7 @@ app.use(cors({
 }));
 
 // ✅ Handle preflight requests
-app.options("*", cors());
+app.options("/(.*)", cors());
 
 // env
 require("dotenv").config();
