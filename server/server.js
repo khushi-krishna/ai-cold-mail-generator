@@ -4,15 +4,23 @@ const app = express();
 const connectDb = require("./config/db");
 const aiRoutes = require("./routes/aiRoutes");
 const authRoutes = require("./routes/authRoutes");
-console.log("authRoutes type:", typeof authRoutes);
-console.log("aiRoutes type:", typeof aiRoutes);
+
 const PORT = 3000;
 
-//CORS configuration
-
+// ✅ CORS — must be before routes
 app.use(cors({
-  origin: "*"
+  origin: [
+    "http://localhost:5173",
+    "https://ai-cold-mail-generator-alpha.vercel.app",
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+// ✅ Handle preflight requests
+app.options("*", cors());
+
 // env
 require("dotenv").config();
 
