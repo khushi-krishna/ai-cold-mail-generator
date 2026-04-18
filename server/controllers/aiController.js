@@ -1,7 +1,7 @@
 const axios = require("axios");
 const EmailHistory = require("../models/emailHistory");
 const mammoth = require("mammoth");
-const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
+const pdfjsLib = require("pdfjs-dist");
 
 // ─── GENERATE EMAIL ───────────────────────────────────────────
 exports.generateEmail = async (req, res) => {
