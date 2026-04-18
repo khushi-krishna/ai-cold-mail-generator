@@ -1,7 +1,22 @@
 const axios = require("axios");
 const EmailHistory = require("../models/emailHistory");
 const mammoth = require("mammoth");
-const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
+const PDFParser = require("pdf2json");
+
+// ── helper to extract text from PDF buffer ──
+const extractPdfText = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const parser = new PDFParser();
+    parser.on("pdfParser_dataReady", (data) => {
+      const text = data.Pages
+        .map(page => page.Texts.map(t => decodeURIComponent(t.R[0].T)).join(" "))
+        .join("\n");
+      resolve(text);
+    });
+    parser.on("pdfParser_dataError", (err) => reject(err));
+    parser.parseBuffer(buffer);
+  });
+};
 
 // ─── GENERATE EMAIL ───────────────────────────────────────────
 exports.generateEmail = async (req, res) => {
@@ -42,7 +57,7 @@ No markdown. No explanations. Only JSON.`;
           "Content-Type": "application/json",
         },
         timeout: 30000,
-      },
+      }
     );
 
     const generatedText = response.data.choices[0]?.message?.content;
@@ -55,9 +70,7 @@ No markdown. No explanations. Only JSON.`;
     try {
       parsedResponse = JSON.parse(jsonString);
     } catch {
-      return res
-        .status(500)
-        .json({ message: "AI did not return valid JSON", raw: generatedText });
+      return res.status(500).json({ message: "AI did not return valid JSON", raw: generatedText });
     }
 
     const emailData = {
@@ -68,9 +81,7 @@ No markdown. No explanations. Only JSON.`;
     };
 
     if (!emailData.subject || !emailData.emailBody) {
-      return res
-        .status(500)
-        .json({ message: "AI generated incomplete email. Try again." });
+      return res.status(500).json({ message: "AI generated incomplete email. Try again." });
     }
 
     await EmailHistory.create({
@@ -82,15 +93,12 @@ No markdown. No explanations. Only JSON.`;
       followUpEmail: emailData.followUpEmail,
     });
 
-    return res
-      .status(200)
-      .json({ message: "Email generated successfully", data: emailData });
+    return res.status(200).json({ message: "Email generated successfully", data: emailData });
+
   } catch (error) {
     console.error("❌ AI ERROR:", error.response?.data || error.message);
     if (error.response?.status === 429) {
-      return res
-        .status(429)
-        .json({ message: "Too many requests. Please wait." });
+      return res.status(429).json({ message: "Too many requests. Please wait." });
     }
     return res.status(500).json({
       message: "Failed to generate email",
@@ -103,45 +111,27 @@ No markdown. No explanations. Only JSON.`;
 exports.generateFromResume = async (req, res) => {
   const { jobDescription, outputType } = req.body;
 
-  if (!req.file)
-    return res.status(400).json({ message: "Resume file is required." });
-  if (!jobDescription)
-    return res.status(400).json({ message: "Job description is required." });
-  if (!outputType)
-    return res.status(400).json({ message: "Output type is required." });
+  if (!req.file)       return res.status(400).json({ message: "Resume file is required." });
+  if (!jobDescription) return res.status(400).json({ message: "Job description is required." });
+  if (!outputType)     return res.status(400).json({ message: "Output type is required." });
 
   try {
     let resumeText = "";
     const mime = req.file.mimetype;
 
     if (mime === "application/pdf") {
-      // ── Extract text using pdfjs-dist ──
-      const uint8Array = new Uint8Array(req.file.buffer);
-      const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
-      const pdfDoc = await loadingTask.promise;
-      let text = "";
-      for (let i = 1; i <= pdfDoc.numPages; i++) {
-        const page = await pdfDoc.getPage(i);
-        const content = await page.getTextContent();
-        text += content.items.map((item) => item.str).join(" ") + "\n";
-      }
-      resumeText = text;
-    } else if (
-      mime ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ) {
+      resumeText = await extractPdfText(req.file.buffer);
+
+    } else if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
       const result = await mammoth.extractRawText({ buffer: req.file.buffer });
       resumeText = result.value;
+
     } else {
-      return res
-        .status(400)
-        .json({ message: "Only PDF or DOCX files are supported." });
+      return res.status(400).json({ message: "Only PDF or DOCX files are supported." });
     }
 
     if (!resumeText.trim()) {
-      return res
-        .status(400)
-        .json({ message: "Could not extract text from resume." });
+      return res.status(400).json({ message: "Could not extract text from resume." });
     }
 
     const prompts = {
@@ -171,8 +161,7 @@ RESUME:\n${resumeText.slice(0, 3000)}\nJOB DESCRIPTION:\n${jobDescription.slice(
     };
 
     const selectedPrompt = prompts[outputType];
-    if (!selectedPrompt)
-      return res.status(400).json({ message: "Invalid output type." });
+    if (!selectedPrompt) return res.status(400).json({ message: "Invalid output type." });
 
     const response = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -188,7 +177,7 @@ RESUME:\n${resumeText.slice(0, 3000)}\nJOB DESCRIPTION:\n${jobDescription.slice(
           "Content-Type": "application/json",
         },
         timeout: 30000,
-      },
+      }
     );
 
     const generatedText = response.data.choices[0]?.message?.content;
@@ -201,9 +190,7 @@ RESUME:\n${resumeText.slice(0, 3000)}\nJOB DESCRIPTION:\n${jobDescription.slice(
     try {
       parsed = JSON.parse(jsonString);
     } catch {
-      return res
-        .status(500)
-        .json({ message: "AI returned invalid JSON.", raw: generatedText });
+      return res.status(500).json({ message: "AI returned invalid JSON.", raw: generatedText });
     }
 
     await EmailHistory.create({
@@ -221,6 +208,7 @@ RESUME:\n${resumeText.slice(0, 3000)}\nJOB DESCRIPTION:\n${jobDescription.slice(
       subject: parsed.subject || null,
       output: parsed.output,
     });
+
   } catch (error) {
     console.error("❌ RESUME GENERATE ERROR:", error.message);
     return res.status(500).json({
@@ -236,15 +224,11 @@ exports.getHistory = async (req, res) => {
     if (!req.user || !req.user._id) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const history = await EmailHistory.find({ user: req.user._id }).sort({
-      createdAt: -1,
-    });
+    const history = await EmailHistory.find({ user: req.user._id }).sort({ createdAt: -1 });
     return res.status(200).json(history);
   } catch (error) {
     console.error("❌ HISTORY ERROR:", error);
-    return res
-      .status(500)
-      .json({ message: "Failed to fetch history", error: error.message });
+    return res.status(500).json({ message: "Failed to fetch history", error: error.message });
   }
 };
 
@@ -254,8 +238,6 @@ exports.clearHistory = async (req, res) => {
     await EmailHistory.deleteMany({ user: req.user._id });
     res.status(200).json({ message: "History cleared" });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error clearing history", error: error.message });
+    res.status(500).json({ message: "Error clearing history", error: error.message });
   }
 };
