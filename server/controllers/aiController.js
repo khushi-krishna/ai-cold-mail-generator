@@ -8,23 +8,33 @@ const extractPdfText = (buffer) => {
   return new Promise((resolve, reject) => {
     const parser = new PDFParser();
     parser.on("pdfParser_dataReady", (data) => {
-      const text = data.Pages
-        .map(page =>
-          page.Texts.map(t => {
-            try {
-              return decodeURIComponent(t.R[0].T);
-            } catch {
-              return t.R[0].T; // ✅ return raw text if decode fails
-            }
-          }).join(" ")
-        )
-        .join("\n");
-      resolve(text);
+      try {
+        const text = data.Pages
+          .map(page =>
+            page.Texts.map(t => {
+              try {
+                return decodeURIComponent(t.R[0].T);
+              } catch {
+                return t.R[0].T;
+              }
+            }).join(" ")
+          )
+          .join("\n");
+        console.log("✅ PDF extracted, length:", text.length);
+        resolve(text);
+      } catch (err) {
+        console.error("❌ PDF extraction error:", err.message);
+        reject(err);
+      }
     });
-    parser.on("pdfParser_dataError", (err) => reject(err));
+    parser.on("pdfParser_dataError", (err) => {
+      console.error("❌ PDF parser error:", err);
+      reject(new Error("Failed to parse PDF"));
+    });
     parser.parseBuffer(buffer);
   });
 };
+
 // ─── GENERATE EMAIL ───────────────────────────────────────────
 exports.generateEmail = async (req, res) => {
   const { prompt } = req.body;
@@ -126,16 +136,20 @@ exports.generateFromResume = async (req, res) => {
     let resumeText = "";
     const mime = req.file.mimetype;
 
+    console.log("📄 mime:", mime);
+    console.log("📦 file size:", req.file.size);
+
     if (mime === "application/pdf") {
       resumeText = await extractPdfText(req.file.buffer);
-
     } else if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
       const result = await mammoth.extractRawText({ buffer: req.file.buffer });
       resumeText = result.value;
-
+      console.log("✅ DOCX extracted, length:", resumeText.length);
     } else {
       return res.status(400).json({ message: "Only PDF or DOCX files are supported." });
     }
+
+    console.log("📝 resume text preview:", resumeText.slice(0, 200));
 
     if (!resumeText.trim()) {
       return res.status(400).json({ message: "Could not extract text from resume." });
@@ -170,12 +184,14 @@ RESUME:\n${resumeText.slice(0, 3000)}\nJOB DESCRIPTION:\n${jobDescription.slice(
     const selectedPrompt = prompts[outputType];
     if (!selectedPrompt) return res.status(400).json({ message: "Invalid output type." });
 
+    console.log("🤖 Calling Groq API with outputType:", outputType);
+
     const response = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: selectedPrompt }],
-        max_tokens: 1000,
+        max_tokens: 2000,
         temperature: 0.7,
       },
       {
@@ -183,12 +199,14 @@ RESUME:\n${resumeText.slice(0, 3000)}\nJOB DESCRIPTION:\n${jobDescription.slice(
           Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
           "Content-Type": "application/json",
         },
-        timeout: 30000,
+        timeout: 60000,
       }
     );
 
     const generatedText = response.data.choices[0]?.message?.content;
     if (!generatedText) throw new Error("Empty response from Groq");
+
+    console.log("✅ Groq response received, length:", generatedText.length);
 
     const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
     const jsonString = jsonMatch ? jsonMatch[0] : generatedText;
@@ -218,6 +236,7 @@ RESUME:\n${resumeText.slice(0, 3000)}\nJOB DESCRIPTION:\n${jobDescription.slice(
 
   } catch (error) {
     console.error("❌ RESUME GENERATE ERROR:", error.message);
+    console.error("❌ FULL ERROR:", error.response?.data || error);
     return res.status(500).json({
       message: "Failed to generate output",
       error: error.message,
