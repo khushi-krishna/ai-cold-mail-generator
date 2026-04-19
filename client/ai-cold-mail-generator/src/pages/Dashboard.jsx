@@ -5,8 +5,7 @@ import { ClipboardDocumentIcon, CheckIcon, CloudArrowUpIcon, DocumentTextIcon } 
 import './Dashboard.css';
 
 const OUTPUT_TYPES = [
-    // { key: 'coldEmail',      label: 'Cold Email' },
-    // { key: 'linkedInDM',     label: 'LinkedIn DM' },
+
     { key: 'tailoredResume', label: 'Tailor Resume' },  // ✅ replaced resumeTips
 ];
 
@@ -18,10 +17,7 @@ const Dashboard = () => {
     const [prompt, setPrompt] = useState('');
 
     // ── resume mode
-    const [resume,     setResume]     = useState(null);
-    const [jobDesc,    setJobDesc]    = useState('');
-    const [outputType, setOutputType] = useState('coldEmail');
-    const [dragging,   setDragging]   = useState(false);
+  const [outputType, setOutputType] = useState('tailoredResume'); 
 
     // ── shared
     const [loading,   setLoading]   = useState(false);
