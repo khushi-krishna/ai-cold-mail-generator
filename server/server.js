@@ -1,3 +1,5 @@
+require("dotenv").config(); // ✅ top of file
+
 const cors = require("cors");
 const express = require("express");
 const app = express();
@@ -5,22 +7,25 @@ const connectDb = require("./config/db");
 const aiRoutes = require("./routes/aiRoutes");
 const authRoutes = require("./routes/authRoutes");
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// ✅ CORS — must be before routes
+// ✅ CORS
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://ai-cold-mail-generator-alpha.vercel.app",
-  ],
+  origin: (origin, callback) => {
+    const allowed = [
+      "http://localhost:5173",
+      "https://ai-cold-mail-generator-alpha.vercel.app",
+    ];
+    if (!origin || allowed.includes(origin) || origin.endsWith(".vercel.app")) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
-
-
-// env
-require("dotenv").config();
 
 // connect to MongoDB
 connectDb();
