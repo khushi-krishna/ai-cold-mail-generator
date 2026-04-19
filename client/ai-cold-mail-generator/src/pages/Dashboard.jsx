@@ -5,19 +5,20 @@ import { ClipboardDocumentIcon, CheckIcon, CloudArrowUpIcon, DocumentTextIcon } 
 import './Dashboard.css';
 
 const OUTPUT_TYPES = [
-
-    { key: 'tailoredResume', label: 'Tailor Resume' },  // ✅ replaced resumeTips
+    { key: 'tailoredResume', label: 'Tailor Resume' },
 ];
 
 const Dashboard = () => {
-    // ── mode: 'prompt' | 'resume'
-    const [mode, setMode] = useState('Resume');
+    const [mode, setMode] = useState('resume'); // ✅ lowercase
 
     // ── prompt mode
     const [prompt, setPrompt] = useState('');
 
     // ── resume mode
-  const [outputType, setOutputType] = useState('tailoredResume'); 
+    const [resume,     setResume]     = useState(null);  // ✅ added
+    const [jobDesc,    setJobDesc]    = useState('');     // ✅ added
+    const [dragging,   setDragging]   = useState(false);  // ✅ added
+    const [outputType, setOutputType] = useState('tailoredResume');
 
     // ── shared
     const [loading,   setLoading]   = useState(false);
@@ -32,7 +33,7 @@ const Dashboard = () => {
         setLoading(true);
         setResult(null);
         try {
-            const { data } = await api.post('api/ai/generate-email', { prompt });
+            const { data } = await api.post('/ai/generate-email', { prompt }); // ✅ fixed url
             if (data?.data) {
                 setResult({ type: 'prompt', ...data.data });
                 setActiveTab('subject');
@@ -47,8 +48,8 @@ const Dashboard = () => {
 
     // ── resume generate
     const handleResumeGenerate = async () => {
-        if (!resume)          return toast.error('Please upload your resume.');
-        if (!jobDesc.trim())  return toast.error('Please paste the job description.');
+        if (!resume)         return toast.error('Please upload your resume.');
+        if (!jobDesc.trim()) return toast.error('Please paste the job description.');
         setLoading(true);
         setResult(null);
         try {
@@ -56,7 +57,7 @@ const Dashboard = () => {
             formData.append('resume', resume);
             formData.append('jobDescription', jobDesc);
             formData.append('outputType', outputType);
-            const { data } = await api.post('api/ai/generate-resume', formData, {
+            const { data } = await api.post('/ai/generate-resume', formData, { // ✅ fixed url
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             setResult({ type: 'resume', outputType: data.outputType, subject: data.subject, output: data.output });
@@ -71,8 +72,10 @@ const Dashboard = () => {
     // ── file handling
     const handleFile = (file) => {
         if (!file) return;
-        const allowed = ['application/pdf',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        const allowed = [
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
         if (!allowed.includes(file.type)) return toast.error('Only PDF or DOCX supported.');
         setResume(file);
         setResult(null);
@@ -104,14 +107,12 @@ const Dashboard = () => {
             <div className="dash-grid">
                 {/* Header */}
                 <div className="dash-header">
-                    
-    <span className="dash-logo">Outreach.ai</span>
-    <a href="/" className="dash-back-btn">← Home</a>  {/* ✅ */}
+                    <span className="dash-logo">Outreach.ai</span>
+                    <a href="/" className="dash-back-btn">← Home</a>
 
-                    {/* Mode switcher */}
                     <div className="dash-mode-switch">
-                         <button
-                            className={`dash-mode-btn ${mode === 'resume' ? 'active' : ''}`}
+                        <button
+                            className={`dash-mode-btn ${mode === 'resume' ? 'resume-active' : ''}`}
                             onClick={() => { setMode('resume'); setResult(null); }}>
                             ◈ Resume
                         </button>
@@ -120,12 +121,11 @@ const Dashboard = () => {
                             onClick={() => { setMode('prompt'); setResult(null); }}>
                             ✦ Prompt
                         </button>
-                     
                     </div>
                 </div>
 
                 {/* Left Panel */}
-                <div className="panel-left">
+                <div className={`panel-left ${mode === 'resume' ? 'resume-mode' : ''}`}>
                     {mode === 'prompt' ? (
                         <>
                             <h2 className="panel-title">Craft your<br /><span>perfect job pitch.</span></h2>
@@ -165,36 +165,35 @@ const Dashboard = () => {
                             </div>
 
                             {/* Resume upload */}
-                           {/* Resume upload */}
-<div>
-    <span className="prompt-label">Resume (PDF / DOCX)</span>
-    <div
-        className={`dash-dropzone ${dragging ? 'dragging' : ''} ${resume ? 'has-file' : ''}`}
-        onDragOver={e => { e.preventDefault(); setDragging(true); }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
-        onClick={() => !resume && document.getElementById('dash-file').click()}>  {/* ✅ only open picker if no file */}
-        <input id="dash-file" type="file" accept=".pdf,.docx"
-            style={{ display: 'none' }}
-            onChange={e => handleFile(e.target.files[0])} />
-        {resume ? (
-            <>
-                <DocumentTextIcon className="dash-drop-icon active" />
-                <span className="dash-drop-text">{resume.name}</span>
-                <button
-                    className="dash-remove-file"
-                    onClick={e => { e.stopPropagation(); setResume(null); setResult(null); }}>
-                    ✕
-                </button>
-            </>
-        ) : (
-            <>
-                <CloudArrowUpIcon className="dash-drop-icon" />
-                <span className="dash-drop-text">Drop or click to upload</span>
-            </>
-        )}
-    </div>
-</div>
+                            <div>
+                                <span className="prompt-label">Resume (PDF / DOCX)</span>
+                                <div
+                                    className={`dash-dropzone ${dragging ? 'dragging' : ''} ${resume ? 'has-file' : ''}`}
+                                    onDragOver={e => { e.preventDefault(); setDragging(true); }}
+                                    onDragLeave={() => setDragging(false)}
+                                    onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
+                                    onClick={() => !resume && document.getElementById('dash-file').click()}>
+                                    <input id="dash-file" type="file" accept=".pdf,.docx"
+                                        style={{ display: 'none' }}
+                                        onChange={e => handleFile(e.target.files[0])} />
+                                    {resume ? (
+                                        <>
+                                            <DocumentTextIcon className="dash-drop-icon active" />
+                                            <span className="dash-drop-text">{resume.name}</span>
+                                            <button
+                                                className="dash-remove-file"
+                                                onClick={e => { e.stopPropagation(); setResume(null); setResult(null); }}>
+                                                ✕
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CloudArrowUpIcon className="dash-drop-icon" />
+                                            <span className="dash-drop-text">Drop or click to upload</span>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
 
                             {/* Job description */}
                             <div className="flex-1 flex flex-col">
@@ -240,7 +239,7 @@ const Dashboard = () => {
                                     </div>
                                 )}
                                 <div className="result-header">
-                                    <span className="result-tag">
+                                    <span className={result.type === 'resume' ? 'resume-result-tag' : 'result-tag'}>
                                         {result.type === 'prompt'
                                             ? promptTabs.find(t => t.key === activeTab)?.label
                                             : OUTPUT_TYPES.find(t => t.key === result.outputType)?.label}
