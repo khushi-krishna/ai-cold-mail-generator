@@ -9,7 +9,15 @@ const extractPdfText = (buffer) => {
     const parser = new PDFParser();
     parser.on("pdfParser_dataReady", (data) => {
       const text = data.Pages
-        .map(page => page.Texts.map(t => decodeURIComponent(t.R[0].T)).join(" "))
+        .map(page =>
+          page.Texts.map(t => {
+            try {
+              return decodeURIComponent(t.R[0].T);
+            } catch {
+              return t.R[0].T; // ✅ return raw text if decode fails
+            }
+          }).join(" ")
+        )
         .join("\n");
       resolve(text);
     });
@@ -17,7 +25,6 @@ const extractPdfText = (buffer) => {
     parser.parseBuffer(buffer);
   });
 };
-
 // ─── GENERATE EMAIL ───────────────────────────────────────────
 exports.generateEmail = async (req, res) => {
   const { prompt } = req.body;
