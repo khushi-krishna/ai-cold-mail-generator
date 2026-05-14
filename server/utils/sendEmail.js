@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const sendEmail = async ({ to, subject, text }) => {
   try {
     const { error } = await resend.emails.send({
-      from: "onboarding@resend.dev", // free tier sender
+     from: 'Outreach.ai <onboarding@resend.dev>',
       to,
       subject,
       text,
